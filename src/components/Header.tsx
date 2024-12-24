@@ -1,54 +1,71 @@
 import classNames from 'classnames';
-import React from 'react';
-import { Todo } from '../types/Todo';
+import { useEffect } from 'react';
 
 type Props = {
-  todos: Todo[];
-  inputLoading: boolean;
-  inputValue: string;
-  refForInput: React.RefObject<HTMLInputElement>;
-  handleChangeValue: (value: string) => void;
-  handleAddTodo: (someText: string) => void;
-  handleChangeStatusAll: () => void;
+  inputRef: React.RefObject<HTMLInputElement>;
+  hasTodos: boolean;
+  allCompletedTodos: boolean;
+  onAddTodo: (value: string) => Promise<void>;
+  onToggleAll: () => void;
 };
 
 export const Header: React.FC<Props> = ({
-  todos,
-  inputLoading,
-  inputValue,
-  refForInput,
-  handleAddTodo,
-  handleChangeValue,
-  handleChangeStatusAll,
+  inputRef,
+  hasTodos,
+  allCompletedTodos,
+  onAddTodo,
+  onToggleAll,
 }) => {
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [inputRef]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const inputElement = inputRef.current;
+
+    if (inputElement) {
+      inputElement.disabled = true;
+
+      onAddTodo(inputElement.value)
+        .then(() => {
+          if (inputElement) {
+            inputElement.value = '';
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (inputElement) {
+            inputElement.disabled = false;
+            inputElement.focus();
+          }
+        });
+    }
+  };
+
   return (
     <header className="todoapp__header">
-      {todos.length > 0 && (
+      {hasTodos && (
         <button
           type="button"
           className={classNames('todoapp__toggle-all', {
-            active: todos.every(todo => todo.completed),
+            active: allCompletedTodos,
           })}
           data-cy="ToggleAllButton"
-          onClick={handleChangeStatusAll}
+          onClick={onToggleAll}
         />
       )}
 
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          handleAddTodo(inputValue);
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <input
           data-cy="NewTodoField"
           type="text"
           className="todoapp__new-todo"
           placeholder="What needs to be done?"
-          disabled={inputLoading}
-          ref={refForInput}
-          value={inputValue}
-          onChange={event => handleChangeValue(event.target.value)}
+          ref={inputRef}
         />
       </form>
     </header>

@@ -1,46 +1,54 @@
-import React from 'react';
-import { Todo } from '../types/Todo';
-import { FilterType } from '../App';
-import { FooterLink } from './FooterLink';
+import classNames from 'classnames';
+import { Filter } from '../types/Filter';
 
 type Props = {
-  todos: Todo[];
-  selectedFilter: FilterType;
-  deleteAllCompleted: () => Promise<void>;
-  showFilteredTodos: (filterType: FilterType) => void;
+  activeTodosCount: number;
+  currFilter: Filter;
+  hasCompletedTodos: boolean;
+  onFilter: (newFilter: Filter) => void;
+  onClearCompletedTodos: () => void;
 };
 
 export const Footer: React.FC<Props> = ({
-  todos,
-  selectedFilter,
-  deleteAllCompleted,
-  showFilteredTodos,
+  activeTodosCount,
+  currFilter,
+  hasCompletedTodos,
+  onFilter,
+  onClearCompletedTodos,
 }) => {
-  const links = Object.values(FilterType);
-
   return (
     <footer className="todoapp__footer" data-cy="Footer">
       <span className="todo-count" data-cy="TodosCounter">
-        {`${todos.filter(todo => !todo.completed).length} items left`}
+        {`${activeTodosCount} items left`}
       </span>
 
       <nav className="filter" data-cy="Filter">
-        {links.map(link => (
-          <FooterLink
-            key={link}
-            name={link}
-            selectedFilter={selectedFilter}
-            showFilteredTodos={showFilteredTodos}
-          />
-        ))}
+        {Object.values(Filter).map(filter => {
+          const capitalizedFilter =
+            filter[0].toUpperCase() + filter.slice(1).toLowerCase();
+
+          return (
+            <a
+              key={filter}
+              href={`#/${filter === Filter.All ? '' : filter}`}
+              className={classNames('filter__link', {
+                selected: currFilter === filter,
+              })}
+              data-cy={`FilterLink${capitalizedFilter}`}
+              onClick={() => onFilter(filter)}
+            >
+              {capitalizedFilter}
+            </a>
+          );
+        })}
       </nav>
 
       <button
         type="button"
         className="todoapp__clear-completed"
         data-cy="ClearCompletedButton"
-        disabled={!todos.some(todo => todo.completed)}
-        onClick={() => deleteAllCompleted()}
+        onClick={onClearCompletedTodos}
+        disabled={!hasCompletedTodos}
       >
         Clear completed
       </button>

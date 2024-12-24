@@ -1,50 +1,34 @@
-import React from 'react';
 import { Todo } from '../types/Todo';
 import { TodoItem } from './TodoItem';
 
 type Props = {
-  filteredTodos: Todo[];
-  selectedTodo: number | null;
-  clearCompleted: boolean;
+  todos: Todo[];
   tempTodo: Todo | null;
-  deleteTodo: (todoId: number) => void;
-  changeStatus: (todoId: number) => void;
-  editTodo: (todoId: number, newTitle: string) => void;
+  onDeleteTodo: (value: number) => Promise<void>;
+  loading: number[];
+  onUpdateTodo: (updatedTodo: Todo) => Promise<void>;
 };
 
 export const TodoList: React.FC<Props> = ({
-  filteredTodos,
-  selectedTodo,
-  clearCompleted,
+  todos,
   tempTodo,
-  deleteTodo,
-  changeStatus,
-  editTodo,
+  onDeleteTodo,
+  loading,
+  onUpdateTodo,
 }) => {
   return (
-    <section className="todoapp__main" data-cy="TodoList">
-      {filteredTodos.map(todo => (
+    <div className="todoapp__main" data-cy="TodoList">
+      {todos.map(todo => (
         <TodoItem
           todo={todo}
           key={todo.id}
-          handleDeleteTodo={deleteTodo}
-          selectedTodo={selectedTodo}
-          clearCompleted={clearCompleted}
-          handleChangeStatus={changeStatus}
-          handleEditTodo={editTodo}
+          onDeleteTodo={onDeleteTodo}
+          isLoading={loading.includes(todo.id)}
+          onUpdateTodo={onUpdateTodo}
         />
       ))}
-      {tempTodo && (
-        <TodoItem
-          todo={tempTodo}
-          key={tempTodo.id}
-          selectedTodo={tempTodo.id}
-          handleDeleteTodo={deleteTodo}
-          clearCompleted={true}
-          handleChangeStatus={changeStatus}
-          handleEditTodo={editTodo}
-        />
-      )}
-    </section>
+
+      {tempTodo && <TodoItem todo={tempTodo} isLoading />}
+    </div>
   );
 };
